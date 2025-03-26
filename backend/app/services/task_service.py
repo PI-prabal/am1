@@ -18,9 +18,12 @@ from app.schemas.task import (
     TaskResponse,
 )
 from app.services.maf.impl.am1 import BrowserUse
+from app.services.kafka.producer import KafkaProducer
+from app.schemas.kafka import KafkaTaskRequest
 
 logger = get_logger()
 
+KAFKA_BOOTSTRAP_SERVERS = "192.168.200.148:9092"
 task_repository = TaskRepository()
 
 # # Create sync engine and sessionmaker
@@ -135,6 +138,19 @@ async def start_task(task_id: str, background_tasks: BackgroundTasks, db: AsyncS
             raise HTTPException(status_code=404, detail="Task not found")
         logger.info(f"Task with ID {task_id} found: {task}")
 
+        kafka_producer = KafkaProducer(KAFKA_BOOTSTRAP_SERVERS)
+        await kafka_producer.start()
+
+        # Create a Kafka task request
+        kafka_task_request = KafkaTaskRequest(
+            task_id=str(task.task_id),
+            task_type="AM1",
+            created_at=str(task.created_at)
+        )
+
+        # Send the job to Kafka
+        await kafka_producer.send_job(kafka_task_request, topic="maf-tasks")
+
         background_tasks.add_task(execute_task, task, db)
         # update_task_details(
         #     task_id=task_id, final_response=response, status=status, db=db
@@ -160,6 +176,7 @@ async def start_task(task_id: str, background_tasks: BackgroundTasks, db: AsyncS
             created_at=task.created_at.isoformat() if task.created_at else None,
             updated_at=task.updated_at.isoformat() if task.updated_at else None,
         )
+
         logger.info(f"Started task with ID {task_id}.")
         return task_response
 

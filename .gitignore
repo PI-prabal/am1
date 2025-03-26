@@ -179,3 +179,4 @@ certs/
 config/*.yaml
 config/*.yml
 
+/venv_3_12

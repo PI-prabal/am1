@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaProducer:
-    def __init__(self, bootstrap_servers):
+    def __init__(self, bootstrap_servers=None):
         self.bootstrap_servers = bootstrap_servers
         self.producer = None
 
@@ -38,7 +38,7 @@ class KafkaProducer:
         await self.producer.send_and_wait(
             topic=topic,
             value=job_str.encode("utf-8"),
-            key=job.id.encode("utf-8")
+            key=job.task_id.encode("utf-8")
         )
 
         logger.info(f"Job {job.task_id} sent to topic {topic}")

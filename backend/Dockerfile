@@ -144,6 +144,7 @@ RUN cat /usr/local/share/ca-certificates/pi-localhost.crt >> $(python -m certifi
 
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV PYTHONPATH=/app
 
 #ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 #ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
